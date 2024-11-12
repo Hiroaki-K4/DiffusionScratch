@@ -28,7 +28,7 @@ $$
 The probability the generative model assigns to the data is as follows.
 
 $$
-p_\theta(x_0)=\int dx^{(1...T)} p_\theta(x^{(0...T)})
+p_\theta(x_0)=\int dx_{1:T} p_\theta(x_{0:T})
 $$
 
 In the original original paper, the integral is intractable, so the fomula transformation is show below.
@@ -38,9 +38,9 @@ and it is difficult to calculate the integral.
 
 $$
 \begin{align*}
-p_\theta(x_0)&=\int dx^{(1...T)} p_\theta(x^{(0...T)}) \frac{q(x^{(1...T)}|x_0)}{q(x^{(1...T)}|x_0)} \\
-&=\int dx^{(1...T)} q(x^{(1...T)}|x_0) \frac{p_\theta(x^{(0...T)})}{q(x^{(1...T)}|x_0)} \\
-&=\int dx^{(1...T)} q(x^{(1...T)}|x_0) p_\theta(x^{(T)})\prod_{t=1}^T \frac{p_\theta(x^{(t-1)}|x^{(t)})}{q(x^{(t)}|x^{(t-1)})}
+p_\theta(x_0)&=\int dx_{1:T} p_\theta(x_{0:T}) \frac{q(x_{1:T}|x_0)}{q(x_{1:T}|x_0)} \\
+&=\int dx_{1:T} q(x_{1:T}|x_0) \frac{p_\theta(x_{0:T})}{q(x_{1:T}|x_0)} \\
+&=\int dx_{1:T} q(x_{1:T}|x_0) p_\theta(x_T)\prod_{t=1}^T \frac{p_\theta(x_{t-1}|x_{t})}{q(x_{t}|x_{t-1})}
 \end{align*}
 $$
 
@@ -50,12 +50,61 @@ Below equation has a upper bound provided by Jensen’s inequality,
 $$
 \begin{align*}
 E[-\log p_\theta(x_0)]&=
-E\Big[-\log \Big[ \int dx^{(1...T)} q(x^{(1...T)}|x_0) p(x^{(T)})\prod_{t=1}^T \frac{p_\theta(x^{(t-1)}|x^{(t)})}{q(x^{(t)}|x^{(t-1)})}\Big] \Big] \\
-&\leq E_q\Big[-\log \Big[p(x^{(T)})\prod_{t=1}^T \frac{p_\theta(x^{(t-1)}|x^{(t)})}{q(x^{(t)}|x^{(t-1)})}\Big] \Big] \\
-&\leq E_q\Big[-\log p(x^{(T)}) - \sum_{t\geq1} \log \frac{p_\theta(x^{(t-1)}|x^{(t)})}{q(x^{(t)}|x^{(t-1)})} \Big] =:L
+E\Big[-\log \Big[ \int dx_{1:T} q(x_{1:T}|x_0) p(x_{T})\prod_{t=1}^T \frac{p_\theta(x_{t-1}|x_{t})}{q(x_{t}|x_{t-1})} \Big] \Big] \\
+&\leq E_q\Big[-\log \Big[p(x_{T})\prod_{t=1}^T \frac{p_\theta(x_{t-1}|x_{t})}{q(x_{t}|x_{t-1})}\Big] \Big] \\
+&\leq E_q\Big[-\log p(x_{T}) - \sum_{t\geq1} \log \frac{p_\theta(x_{t-1}|x_{t})}{q(x_{t}|x_{t-1})} \Big] =:L
 \end{align*}
 $$
 
+The equation can be further transformed as follows.
+
+$$
+\begin{align*}
+L &= E_q\Big[ -\log p(x_{T}) - \sum_{t\geq1} \log \frac{p_\theta(x_{t-1}|x_{t})}{q(x_{t}|x_{t-1})} \Big] \\
+&= E_q \Big[ -\log p(x_{T}) - \sum_{t>1} \log \frac{p_\theta(x_{t-1}|x_{t})}{q(x_{t}|x_{t-1})} - \log \frac{p_\theta(x_0|x_1)}{q(x_1|x_0)} \Big] \\
+&= E_q \Big[ -\log p(x_{T}) - \sum_{t>1} \log \frac{p_\theta(x_{t-1}|x_{t})}{q(x_{t-1}|x_{t},x_0)} \frac{q(x_{t-1}|x_0)}{q(x_t|x_0)} - \log \frac{p_\theta(x_0|x_1)}{q(x_1|x_0)} \Big] \\
+&= E_q \Big[ -\log \frac{p(x_{T})}{q(x_T|x_0)} - \sum_{t>1} \log \frac{p_\theta(x_{t-1}|x_{t})}{q(x_{t-1}|x_{t},x_0)} - \log p_\theta(x_0|x_1) \Big] \\
+&= E_q \Big[ D_{KL}(q(x_T|x_0) \parallel p(x_T)) + \sum_{t>1}D_{KL}(q(x_{t-1}|x_t,x_0)\parallel p_\theta (x_{t-1}| x_t)) - \log p_\theta(x_0|x_1) \Big] \\
+&= E_q \Big[ L_T + \sum_{t>1}L_{t-1} + L_0 \Big]
+\end{align*}
+$$
+
+In the above equation deformation, $q(x_t|x_{t-1})$ was transformed as follows.
+
+$$
+\begin{align*}
+q(x_t|x_{t-1}) &= q(x_t|x_{t-1},x_0) \\
+&= \frac{q(x_t,x_{t-1}|x_0)}{q(x_{t-1}|x_0)} \\
+&= q(x_{t-1}|x_t,x_0) \frac{q(x_t|x_0)}{q(x_{t-1}|x_0)}
+\end{align*}
+$$
+
+We also used the following equation transformation.
+
+$$
+\begin{align*}
+\sum_{t>1} \frac{q(x_{t-1}|x_0)}{q(x_t|x_0)} \frac{1}{q(x_1|x_0)}
+&= \frac{\cancel{q(x_{T-1}|x_0)}...\cancel{q(x_{1}|x_0)}}{q(x_{T}|x_0)...\cancel{q(x_{2}|x_0)}} \frac{1}{\cancel{q(x_1|x_0)}} \\
+&= \frac{1}{q(x_{T}|x_0)}
+\end{align*}
+$$
+
+$D_{KL}$ is called **KL Divergence** and is a type of statistical distance:
+a measure of how one reference probability distribution $P$ is different from a second probability distribution $Q$.
+
+$$
+\begin{align*}
+KL(p \parallel q) &= \int p(x) \log(q(x))dx - \Big(-\int p(x)\log p(x)dx \Big) \\
+&= - \int p(x) \log \frac{q(x)}{p(x)} dx
+\end{align*}
+$$
+
+### Forward process and $L_T$
+We ignore the fact that the forward process variances $β_t$ are learnable by reparameterization and
+instead ﬁx them to constants. Thus, in our implementation, the approximate posterior $q$ has no learnable parameters,
+so $L_T$ is a constant during training and can be ignored.
+
+### Reverse process and $L_{1:T-1}$
 
 
 <br></br>
