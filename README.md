@@ -102,10 +102,17 @@ $$
 ### Forward process and $L_T$
 We ignore the fact that the forward process variances $β_t$ are learnable by reparameterization and
 instead ﬁx them to constants. Thus, in our implementation, the approximate posterior $q$ has no learnable parameters,
-so $L_T$ is a constant during training and can be ignored.
+**so $L_T$ is a constant during training and can be ignored.**
 
 ### Reverse process and $L_{1:T-1}$
 
+$$
+q(x_{t-1}|x_t, x_0) = \mathcal{N} (x_{t-1};\tilde{\mu_t}(x_t,x_0), \tilde{\beta_t}I), \\
+where \quad \tilde{\mu_t}(x_t,x_0) := \frac{\sqrt{\bar{\alpha_{t-1} \beta_t}}}{1-\bar{\alpha_{t}}} x_0 +
+\frac{\sqrt{\alpha_t}(1-\bar{\alpha_{t-1}})}{1-\bar{\alpha_t}} x_t \quad and \quad \tilde{\beta_t}:=\frac{1-\bar{\alpha_{t-1}}}{1-\bar{\alpha_t}} \beta_t
+$$
+
+TODO: Add derivation of mean
 
 <br></br>
 
