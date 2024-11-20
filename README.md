@@ -112,6 +112,54 @@ where \quad \tilde{\mu_t}(x_t,x_0) := \frac{\sqrt{\bar{\alpha_{t-1} \beta_t}}}{1
 \frac{\sqrt{\alpha_t}(1-\bar{\alpha_{t-1}})}{1-\bar{\alpha_t}} x_t \quad and \quad \tilde{\beta_t}:=\frac{1-\bar{\alpha_{t-1}}}{1-\bar{\alpha_t}} \beta_t
 $$
 
+<br></br>
+
+## Appendix
+### A. Derivation of mean and variance of $q(x_{t-1}|x_t,x_0)$
+The conditional distribution $q(x_{t-1}|x_t,x_0)$ is proportional to the product of the following two distributions.
+
+$$
+q(x_{t-1}|x_t,x_0) \propto q(x_t|x_{t-1}) q(x_{t-1}|x_0)
+$$
+
+Those two distributions are defined as follows.
+
+$$
+\begin{align*}
+q(x_t|x_{t-1}) &= \mathcal{N} (x_t;\sqrt{\alpha_t} x_{t-1}, \beta_t I) \\
+q(x_{t-1}|x_0) &= \mathcal{N} (x_{t-1};\sqrt{\bar{\alpha_{t-1}}} x_0, (1-\bar{\alpha_{t-1}}) I)
+\end{align*}
+$$
+
+When calculating variance, we use the product property of the Gaussian distribution.
+The inverse of the variance in a product of Gaussian distribution is expressed as
+the sum of the inverse variances of the individual distributions.
+
+$$
+\begin{align*}
+\frac{1}{\tilde{\beta_t}} &= \frac{1}{\beta_t} + \frac{1}{1-\bar{\alpha_{t-1}}} \\
+&= \frac{1-\bar{\alpha_{t-1}}+\beta_t}{\beta_t (1-\bar{\alpha_{t-1}})}
+\end{align*}
+$$
+
+If we inverse both sides to obtain the variance $\tilde{\beta_t}$
+
+$$
+\tilde{\beta_t} = \frac{\beta_t (1-\bar{\alpha_{t-1}})}{1 - \bar{\alpha_{t-1}} + \beta_t}
+$$
+
+Here, we use the following property.
+
+$$
+1 - \bar{\alpha_{t}} = (1 - \bar{\alpha_{t-1}}) + \beta_t
+$$
+
+Substitute this into the variance fomula to transforme it.
+
+$$
+\tilde{\beta_t} = \frac{\beta_t (1-\bar{\alpha_{t-1}})}{1-\bar{\alpha_t}}
+$$
+
 TODO: Add derivation of mean
 
 <br></br>
