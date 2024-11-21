@@ -79,6 +79,12 @@ q(x_t|x_{t-1}) &= q(x_t|x_{t-1},x_0) \\
 \end{align*}
 $$
 
+In the course of the above equation transformation, the following relationship is used.
+
+$$
+q(x_t,x_{t-1}|x_0) = q(x_t | x_{t-1}, x_0) \cdot q(x_{t-1} | x_0)
+$$
+
 We also used the following equation transformation.
 
 $$
@@ -157,10 +163,35 @@ $$
 Substitute this into the variance fomula to transforme it.
 
 $$
-\tilde{\beta_t} = \frac{\beta_t (1-\bar{\alpha_{t-1}})}{1-\bar{\alpha_t}}
+\tilde{\beta_t} = \frac{(1-\bar{\alpha_{t-1}})}{1-\bar{\alpha_t}}\beta_t
 $$
 
-TODO: Add derivation of mean
+Next, we consider the derivation of the mean. Letting $m_1$ and $m_2$ be the mean of each distribution
+and $\sigma_1^2$ and $\sigma_2^2$ be the variance of each distribution, the mean can be calculated as follows.
+
+$$
+\tilde{\mu_t} = \frac{m_1 \sigma_2^2 + m_2 \sigma_1^2}{\sigma_1^2 + \sigma_2^2}
+$$
+
+Therefore, we can calculate the mean as follows.
+
+$$
+\begin{align*}
+\tilde{\mu_t} &= \frac{(\sqrt{\alpha_t} x_{t-1})(1 - \tilde{\alpha_{t-1}}) + (\sqrt{\bar{\alpha_{t-1}}} x_0)\beta_t}{\beta_t + (1 - \tilde{\alpha_{t-1}})} \\
+&= \frac{\sqrt{\alpha_{t}}(1-\tilde{\alpha_{t-1}})}{\beta_t + (1 - \tilde{\alpha_{t-1}})} x_{t-1} +
+\frac{\sqrt{\tilde{\alpha_{t-1}}}\beta_t}{\beta_t + (1 - \tilde{\alpha_{t-1}})} x_0 \\
+&= \frac{\sqrt{\alpha_{t-1}}\beta_t}{1 - \tilde{\alpha_{t}}}x_0 + \frac{\sqrt{\alpha_{t}}(1-\tilde{\alpha_{t-1}})}{1 - \tilde{\alpha_{t}}}x_t
+\end{align*}
+$$
+
+Here, we use the following property again.
+
+$$
+1 - \bar{\alpha_{t}} = (1 - \bar{\alpha_{t-1}}) + \beta_t
+$$
+
+Honestly, I'm not sure if this derivation is correct. I also don't know why $x_{t-1}$ can be converted to $x_t$.
+This may be related to the fact that we first approximate $q(x_{t-1}|x_t,x_0)$ with two probability distributions.
 
 <br></br>
 
