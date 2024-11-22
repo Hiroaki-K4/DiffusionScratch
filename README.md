@@ -111,6 +111,33 @@ instead ﬁx them to constants. Thus, in our implementation, the approximate pos
 **so $L_T$ is a constant during training and can be ignored.**
 
 ### Reverse process and $L_{1:T-1}$
+Now we discuss our choices in $p_\theta (x_{t-1}|x_t) = \mathcal{N} (x_{t-1}:\mu_\theta(x_t, t), \Sigma_\theta(x_t, t))$ for $1 < t \leq T$.
+First, we set $\Sigma_\theta(x_t, t) = \sigma_t^2 I$ to untrained time dependent constants. Experimentally, both $\sigma_t^2 = \beta_t$ and
+$\sigma_t^2 = \tilde{\beta_t} = \frac{1-\bar{\alpha_{t-1}}}{1-\bar{alpha_t}}\beta_t$ had similar results. Therefore, we can write $L_{t-1}$ as follows.
+
+$$
+L_{t-1} = E_q\Big[ \frac{1}{2\sigma_t^2} |\tilde{\mu_t}(x_t, x_0) - \mu_\theta (x_t, t) |^2 \Big] + C
+$$
+
+$C$ is a constant that does not depend on $\theta$. So, we see that the most straightforward parameterization of $\mu_\theta$ is a model that predict $\tilde{\mu_t}$,
+the forward process posterior mean. Thus, we can use the following equation to expand the above equation. That transformation is called as the [reparameterization trick](https://sassafras13.github.io/ReparamTrick/).
+
+$$
+x_t(x_0, \epsilon) = \sqrt{\bar{\alpha_t}} x_0 + \sqrt{1-\bar{\alpha_t}} \epsilon \quad (\epsilon \sim \mathcal{N}(0,I))
+$$
+
+We can get $x_0$ from above equation.
+
+$$
+x_0 = \frac{1}{\sqrt{\bar{\alpha_t}}}(x_t(x_0, \epsilon) - \sqrt{1 - \bar{\alpha_t}}\epsilon)
+$$
+
+By using the above $x_0$, we can update $L_{t-1}$.
+
+$$
+L_{t-1} - C = E_{x_0,\epsilon} \Big[ \frac{1}{2\sigma_t^2} \Big| \tilde{\mu_t} \Big( x_t(x_0,\epsilon), \frac{1}{\sqrt{\bar{\alpha_t}}}(x_t(x_0, \epsilon) - \sqrt{1 - \bar{\alpha_t}}\epsilon) \Big) - \mu_{\theta}(x_t(x_0, \epsilon), t) \Big|^2 \Big]
+$$
+
 
 $$
 q(x_{t-1}|x_t, x_0) = \mathcal{N} (x_{t-1};\tilde{\mu_t}(x_t,x_0), \tilde{\beta_t}I), \\
@@ -203,3 +230,8 @@ conda activate diff
 conda install pytorch torchvision pytorch-cuda=12.1 -c pytorch -c nvidia
 pip install -r requirements.txt
 ```
+
+<br></br>
+
+## References
+- [The Reparameterization Trick](https://sassafras13.github.io/ReparamTrick/)
