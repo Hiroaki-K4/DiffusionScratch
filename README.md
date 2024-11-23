@@ -135,14 +135,39 @@ $$
 By using the above $x_0$, we can update $L_{t-1}$.
 
 $$
-L_{t-1} - C = E_{x_0,\epsilon} \Big[ \frac{1}{2\sigma_t^2} \Big| \tilde{\mu_t} \Big( x_t(x_0,\epsilon), \frac{1}{\sqrt{\bar{\alpha_t}}}(x_t(x_0, \epsilon) - \sqrt{1 - \bar{\alpha_t}}\epsilon) \Big) - \mu_{\theta}(x_t(x_0, \epsilon), t) \Big|^2 \Big]
+\begin{align*}
+L_{t-1} - C &= E_{x_0,\epsilon} \Big[ \frac{1}{2\sigma_t^2} \Big| \tilde{\mu_t} \Big( x_t(x_0,\epsilon), \frac{1}{\sqrt{\bar{\alpha_t}}}(x_t(x_0, \epsilon) - \sqrt{1 - \bar{\alpha_t}}\epsilon) \Big) - \mu_{\theta}(x_t(x_0, \epsilon), t) \Big|^2 \Big] \\
+&= E_{x_0,\epsilon} \Big[ \frac{1}{2\sigma_t^2} \Big| \frac{1}{\sqrt{\alpha_t}} \Big( x_t(x_0,\epsilon) - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon \Big) - \mu_{\theta}(x_t(x_0, \epsilon), t) \Big|^2 \Big]
+\end{align*}
 $$
 
+We use below $\bar{u_t}(x_t,x_0)$ for above transformation. Appendix A explains the derivation of $\bar{u_t}(x_t,x_0)$ and $\bar{\beta_t}$.
 
 $$
 q(x_{t-1}|x_t, x_0) = \mathcal{N} (x_{t-1};\tilde{\mu_t}(x_t,x_0), \tilde{\beta_t}I), \\
 where \quad \tilde{\mu_t}(x_t,x_0) := \frac{\sqrt{\bar{\alpha_{t-1} \beta_t}}}{1-\bar{\alpha_{t}}} x_0 +
 \frac{\sqrt{\alpha_t}(1-\bar{\alpha_{t-1}})}{1-\bar{\alpha_t}} x_t \quad and \quad \tilde{\beta_t}:=\frac{1-\bar{\alpha_{t-1}}}{1-\bar{\alpha_t}} \beta_t
+$$
+
+The above equation reveals that $\mu_\theta$ must predict $\frac{1}{\sqrt{\alpha_t}}\Big( x_t - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}}\epsilon \Big)$ given $x_t$.
+Since $x_t$ is available as input to the model, we may choose the parameterization
+
+$$
+\mu_\theta (x_t, t) = \frac{1}{\sqrt{\alpha_t}} \Big( x_t - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon_\theta(x_t, t) \Big)
+$$
+
+where $\epsilon_\theta$ is a function approximator intended to predict $\epsilon$ from $x_t$. To sample $x_{t-1} \sim p_\theta(x_{t-1}|x_t)$ is to compute
+$x_{t-1} = \frac{1}{\sqrt{\alpha_t}} \Big( x_t - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon_\theta(x_t, t) \Big) + \sigma_t z$, where $z \sim \mathcal{N}(0,I)$.
+In order to do this, the reparameterization trick is used.  
+We can simplify the equation of $L_{t-1} - C$ by using the above equation.
+
+$$
+\begin{align*}
+L_{t-1} - C &= E_{x_0,\epsilon} \Big[ \frac{1}{2\sigma_t^2} \Big| \frac{1}{\sqrt{\alpha_t}} \Big( x_t(x_0,\epsilon) - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon \Big) - \mu_{\theta}(x_t(x_0, \epsilon), t) \Big|^2 \Big] \\
+&= E_{x_0,\epsilon} \Big[ \frac{1}{2\sigma_t^2} \Big| \frac{1}{\sqrt{\alpha_t}} \Big( x_t(x_0,\epsilon) - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon \Big) - \frac{1}{\sqrt{\alpha_t}} \Big( x_t(x_0,\epsilon) - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon_\theta(x_t, t) \Big) \Big|^2 \Big] \\
+&= E_{x_0,\epsilon} \Big[ \frac{\beta_t}{2\sigma_t^2 \alpha_t(1-\bar{\alpha_{t-1}})} \Big| \epsilon - \epsilon_\theta(x_t, t) \Big|^2 \Big] \\
+&= E_{x_0,\epsilon} \Big[ \frac{\beta_t}{2\sigma_t^2 \alpha_t(1-\bar{\alpha_{t-1}})} \Big| \epsilon - \epsilon_\theta (\sqrt{\bar{\alpha_t}}x_0 + \sqrt{1 - \bar{\alpha_t}}\epsilon , t) \Big|^2 \Big] \\
+\end{align*}
 $$
 
 <br></br>
