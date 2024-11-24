@@ -170,6 +170,28 @@ L_{t-1} - C &= E_{x_0,\epsilon} \Big[ \frac{1}{2\sigma_t^2} \Big| \frac{1}{\sqrt
 \end{align*}
 $$
 
+To summarize, we can train the reverse process mean function approximator $\mu_\theta$ to predict $\tilde{\mu_t}$, or by
+modifying its parameterization, we can train it to predict $\epsilon$.
+
+### Data scaling, reverse process decoder, and $L_0$
+We assume that image data consists of integers in ${0, 1,..., 255}$ scaled linearly to $[−1, 1]$. This
+ensures that the neural network reverse process operates on consistently scaled inputs starting from
+the standard normal prior $p(x_T)$. To obtain discrete log likelihoods, we set the last term of the reverse
+process to an independent discrete decoder derived from the Gaussian $\mathcal{N}(x_0; \mu_\theta(x1, 1), \sigma_1^2 I)$:
+
+$$
+\begin{align*}
+p_\theta (x_0 | x_1) &= \prod_{i=1}^D \int_{\delta_{-(x_0^i)}}^{\delta_{(x_0^i)}} \mathcal{N}(x_0; \mu_\theta^i(x1, 1), \sigma_1^2 )dx \\
+\delta_{+}(x) &= \begin{cases}\infty & (x = 1) \\ x + \frac{1}{255} & (x < 1) \end{cases} \quad
+\delta_{-}(x) = \begin{cases}-\infty & (x = -1) \\ x - \frac{1}{255} & (x > -1) \end{cases}
+\end{align*}
+$$
+
+where $D$ is the data dimensionality and the $i$ superscript indicates extraction of one coordinate.
+The above equation calculates the simulataneous probability of each pixel. $\delta$ means clipping bounds that
+help restrict the Gaussian probability density to the range corresponding to each discrete value of $x_0^i$.
+This ensures proper handling of discrete data in a continous framework.
+
 <br></br>
 
 ## Appendix
