@@ -66,7 +66,7 @@ L &= E_q\Big[ -\log p(x_{T}) - \sum_{t\geq1} \log \frac{p_\theta(x_{t-1}|x_{t})}
 &= E_q \Big[ -\log p(x_{T}) - \sum_{t>1} \log \frac{p_\theta(x_{t-1}|x_{t})}{q(x_{t-1}|x_{t},x_0)} \frac{q(x_{t-1}|x_0)}{q(x_t|x_0)} - \log \frac{p_\theta(x_0|x_1)}{q(x_1|x_0)} \Big] \\
 &= E_q \Big[ -\log \frac{p(x_{T})}{q(x_T|x_0)} - \sum_{t>1} \log \frac{p_\theta(x_{t-1}|x_{t})}{q(x_{t-1}|x_{t},x_0)} - \log p_\theta(x_0|x_1) \Big] \\
 &= E_q \Big[ D_{KL}(q(x_T|x_0) \parallel p(x_T)) + \sum_{t>1}D_{KL}(q(x_{t-1}|x_t,x_0)\parallel p_\theta (x_{t-1}| x_t)) - \log p_\theta(x_0|x_1) \Big] \\
-&= E_q \Big[ L_T + \sum_{t>1}L_{t-1} + L_0 \Big] \tag{6}
+&= E_q \Big[ L_T + \sum_{t>1}L_{t-1} + L_0 \Big] \qquad (6)
 \end{align*}
 $$
 
@@ -76,14 +76,14 @@ $$
 \begin{align*}
 q(x_t|x_{t-1}) &= q(x_t|x_{t-1},x_0) \\
 &= \frac{q(x_t,x_{t-1}|x_0)}{q(x_{t-1}|x_0)} \\
-&= q(x_{t-1}|x_t,x_0) \frac{q(x_t|x_0)}{q(x_{t-1}|x_0)} \tag{7}
+&= q(x_{t-1}|x_t,x_0) \frac{q(x_t|x_0)}{q(x_{t-1}|x_0)} \qquad (7)
 \end{align*}
 $$
 
 In the course of the above equation transformation, the following relationship is used.
 
 $$
-q(x_t,x_{t-1}|x_0) = q(x_t | x_{t-1}, x_0) \cdot q(x_{t-1} | x_0) \tag{8}
+q(x_t,x_{t-1}|x_0) = q(x_t | x_{t-1}, x_0) \cdot q(x_{t-1} | x_0) \qquad (8)
 $$
 
 I also used the following equation transformation.
@@ -92,7 +92,7 @@ $$
 \begin{align*}
 \sum_{t>1} \frac{q(x_{t-1}|x_0)}{q(x_t|x_0)} \frac{1}{q(x_1|x_0)}
 &= \frac{\cancel{q(x_{T-1}|x_0)}...\cancel{q(x_{1}|x_0)}}{q(x_{T}|x_0)...\cancel{q(x_{2}|x_0)}} \frac{1}{\cancel{q(x_1|x_0)}} \\
-&= \frac{1}{q(x_{T}|x_0)} \tag{9}
+&= \frac{1}{q(x_{T}|x_0)} \qquad (9)
 \end{align*}
 $$
 
@@ -102,7 +102,7 @@ a measure of how one reference probability distribution $P$ is different from a 
 $$
 \begin{align*}
 KL(p \parallel q) &= \int p(x) \log(q(x))dx - \Big(-\int p(x)\log p(x)dx \Big) \\
-&= - \int p(x) \log \frac{q(x)}{p(x)} dx \tag{10}
+&= - \int p(x) \log \frac{q(x)}{p(x)} dx \qquad (10)
 \end{align*}
 $$
 
@@ -119,20 +119,20 @@ First, we set $\Sigma_\theta(x_t, t) = \sigma_t^2 I$ to untrained time dependent
 $\sigma_t^2 = \tilde{\beta_t} = \frac{1-\bar{\alpha_{t-1}}}{1-\bar{\alpha_t}}\beta_t$ had similar results. Therefore, we can write $L_{t-1}$ as follows.
 
 $$
-L_{t-1} = E_q\Big[ \frac{1}{2\sigma_t^2} |\tilde{\mu_t}(x_t, x_0) - \mu_\theta (x_t, t) |^2 \Big] + C \tag{11}
+L_{t-1} = E_q\Big[ \frac{1}{2\sigma_t^2} |\tilde{\mu_t}(x_t, x_0) - \mu_\theta (x_t, t) |^2 \Big] + C \qquad (11)
 $$
 
 $C$ is a constant that does not depend on $\theta$. So, we see that the most straightforward parameterization of $\mu_\theta$ is a model that predict $\tilde{\mu_t}$,
 the forward process posterior mean. Thus, we can use the following equation to expand the above equation. That transformation is called as the [reparameterization trick](https://sassafras13.github.io/ReparamTrick/).
 
 $$
-x_t(x_0, \epsilon) = \sqrt{\bar{\alpha_t}} x_0 + \sqrt{1-\bar{\alpha_t}} \epsilon \quad (\epsilon \sim \mathcal{N}(0,I)) \tag{12}
+x_t(x_0, \epsilon) = \sqrt{\bar{\alpha_t}} x_0 + \sqrt{1-\bar{\alpha_t}} \epsilon \quad (\epsilon \sim \mathcal{N}(0,I)) \qquad (12)
 $$
 
 We can get $x_0$ from above equation.
 
 $$
-x_0 = \frac{1}{\sqrt{\bar{\alpha_t}}}(x_t(x_0, \epsilon) - \sqrt{1 - \bar{\alpha_t}}\epsilon) \tag{13}
+x_0 = \frac{1}{\sqrt{\bar{\alpha_t}}}(x_t(x_0, \epsilon) - \sqrt{1 - \bar{\alpha_t}}\epsilon) \qquad (13)
 $$
 
 By using the above $x_0$, we can update $L_{t-1}$.
@@ -140,7 +140,7 @@ By using the above $x_0$, we can update $L_{t-1}$.
 $$
 \begin{align*}
 L_{t-1} - C &= E_{x_0,\epsilon} \Big[ \frac{1}{2\sigma_t^2} \Big| \tilde{\mu_t} \Big( x_t(x_0,\epsilon), \frac{1}{\sqrt{\bar{\alpha_t}}}(x_t(x_0, \epsilon) - \sqrt{1 - \bar{\alpha_t}}\epsilon) \Big) - \mu_{\theta}(x_t(x_0, \epsilon), t) \Big|^2 \Big] \\
-&= E_{x_0,\epsilon} \Big[ \frac{1}{2\sigma_t^2} \Big| \frac{1}{\sqrt{\alpha_t}} \Big( x_t(x_0,\epsilon) - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon \Big) - \mu_{\theta}(x_t(x_0, \epsilon), t) \Big|^2 \Big] \tag{14}
+&= E_{x_0,\epsilon} \Big[ \frac{1}{2\sigma_t^2} \Big| \frac{1}{\sqrt{\alpha_t}} \Big( x_t(x_0,\epsilon) - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon \Big) - \mu_{\theta}(x_t(x_0, \epsilon), t) \Big|^2 \Big] \qquad (14)
 \end{align*}
 $$
 
@@ -149,14 +149,14 @@ We use below $\bar{u_t}(x_t,x_0)$ for above transformation. Appendix A explains 
 $$
 q(x_{t-1}|x_t, x_0) = \mathcal{N} (x_{t-1};\tilde{\mu_t}(x_t,x_0), \tilde{\beta_t}I), \\
 where \quad \tilde{\mu_t}(x_t,x_0) := \frac{\sqrt{\bar{\alpha_{t-1} \beta_t}}}{1-\bar{\alpha_{t}}} x_0 +
-\frac{\sqrt{\alpha_t}(1-\bar{\alpha_{t-1}})}{1-\bar{\alpha_t}} x_t \quad and \quad \tilde{\beta_t}:=\frac{1-\bar{\alpha_{t-1}}}{1-\bar{\alpha_t}} \beta_t \tag{15}
+\frac{\sqrt{\alpha_t}(1-\bar{\alpha_{t-1}})}{1-\bar{\alpha_t}} x_t \quad and \quad \tilde{\beta_t}:=\frac{1-\bar{\alpha_{t-1}}}{1-\bar{\alpha_t}} \beta_t \qquad (15)
 $$
 
 The above equation reveals that $\mu_\theta$ must predict $\frac{1}{\sqrt{\alpha_t}}\Big( x_t - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}}\epsilon \Big)$ given $x_t$.
 Since $x_t$ is available as input to the model, we may choose the parameterization
 
 $$
-\mu_\theta (x_t, t) = \frac{1}{\sqrt{\alpha_t}} \Big( x_t - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon_\theta(x_t, t) \Big) \tag{16}
+\mu_\theta (x_t, t) = \frac{1}{\sqrt{\alpha_t}} \Big( x_t - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon_\theta(x_t, t) \Big) \qquad (16)
 $$
 
 where $\epsilon_\theta$ is a function approximator intended to predict $\epsilon$ from $x_t$. To sample $x_{t-1} \sim p_\theta(x_{t-1}|x_t)$ is to compute
@@ -169,7 +169,7 @@ $$
 L_{t-1} - C &= E_{x_0,\epsilon} \Big[ \frac{1}{2\sigma_t^2} \Big| \frac{1}{\sqrt{\alpha_t}} \Big( x_t(x_0,\epsilon) - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon \Big) - \mu_{\theta}(x_t(x_0, \epsilon), t) \Big|^2 \Big] \\
 &= E_{x_0,\epsilon} \Big[ \frac{1}{2\sigma_t^2} \Big| \frac{1}{\sqrt{\alpha_t}} \Big( x_t(x_0,\epsilon) - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon \Big) - \frac{1}{\sqrt{\alpha_t}} \Big( x_t(x_0,\epsilon) - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon_\theta(x_t, t) \Big) \Big|^2 \Big] \\
 &= E_{x_0,\epsilon} \Big[ \frac{\beta_t}{2\sigma_t^2 \alpha_t(1-\bar{\alpha_{t-1}})} \Big| \epsilon - \epsilon_\theta(x_t, t) \Big|^2 \Big] \\
-&= E_{x_0,\epsilon} \Big[ \frac{\beta_t}{2\sigma_t^2 \alpha_t(1-\bar{\alpha_{t-1}})} \Big| \epsilon - \epsilon_\theta (\sqrt{\bar{\alpha_t}}x_0 + \sqrt{1 - \bar{\alpha_t}}\epsilon , t) \Big|^2 \Big] \tag{17}
+&= E_{x_0,\epsilon} \Big[ \frac{\beta_t}{2\sigma_t^2 \alpha_t(1-\bar{\alpha_{t-1}})} \Big| \epsilon - \epsilon_\theta (\sqrt{\bar{\alpha_t}}x_0 + \sqrt{1 - \bar{\alpha_t}}\epsilon , t) \Big|^2 \Big] \qquad (17)
 \end{align*}
 $$
 
@@ -186,7 +186,7 @@ $$
 \begin{align*}
 p_\theta (x_0 | x_1) &= \prod_{i=1}^D \int_{\delta_{-(x_0^i)}}^{\delta_{(x_0^i)}} \mathcal{N}(x_0; \mu_\theta^i(x1, 1), \sigma_1^2 )dx \\
 \delta_{+}(x) &= \begin{cases}\infty & (x = 1) \\ x + \frac{1}{255} & (x < 1) \end{cases} \quad
-\delta_{-}(x) = \begin{cases}-\infty & (x = -1) \\ x - \frac{1}{255} & (x > -1) \end{cases} \tag{18}
+\delta_{-}(x) = \begin{cases}-\infty & (x = -1) \\ x - \frac{1}{255} & (x > -1) \end{cases} \qquad (18)
 \end{align*}
 $$
 
@@ -199,7 +199,7 @@ This ensures proper handling of discrete data in a continous framework.
 From Eq(17) and Eq(18), we can simplify training objective more.
 
 $$
-L_{simple} := E_{t, x_0, \epsilon} \Big[ | \epsilon - \epsilon_\theta (\sqrt{\bar{\alpha_t}}x_0 + \sqrt{1-\bar{\alpha_t}}\epsilon, t) |^2 \Big] \tag{19}
+L_{simple} := E_{t, x_0, \epsilon} \Big[ | \epsilon - \epsilon_\theta (\sqrt{\bar{\alpha_t}}x_0 + \sqrt{1-\bar{\alpha_t}}\epsilon, t) |^2 \Big] \qquad (19)
 $$
 
 The $t = 1$ case corresponds to $L_0$ wit the integral in the discrete decoder difinition Eq(18)
