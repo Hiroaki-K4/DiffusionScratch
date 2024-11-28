@@ -1,4 +1,4 @@
-# simple_diffusion
+# DiffusionScratch
 
 <br></br>
 
