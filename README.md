@@ -2,6 +2,17 @@
 
 <br></br>
 
+## Forward process
+
+$$
+\begin{align*}
+q(x_t|x_0) &= \mathcal{N} (x_t; \sqrt{\bar{\alpha_t}}x_0, (1-\bar{\alpha_t})I) \\
+x_t &= \sqrt{\bar{\alpha_t}}x_0 + \sqrt{1 - \bar{\alpha_t}}\epsilon \quad (\epsilon \sim \mathcal{N}(0,I))
+\end{align*}
+$$
+
+<br></br>
+
 ## Derivation of loss function
 I show the derivatino of the loss function of the diffusion model.
 
