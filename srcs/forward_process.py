@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
-import seaborn as sns
 import torch
+from matplotlib.animation import FuncAnimation
 from sklearn.datasets import make_swiss_roll
 
 
@@ -14,27 +14,56 @@ def create_original_data():
     return x
 
 
-def add_noise(x):
-    X = torch.tensor(x, dtype=torch.float32)
-
+def calculate_parameters(X, diffusion_steps):
     # Calculate beta
-    diffusion_steps = 40  # Number of steps in the diffusion process
     min_beta = 10e-4
     max_beta = 0.02
     step = (max_beta - min_beta) / diffusion_steps
-    beta_ts = torch.range(min_beta, max_beta, step)
-    print(beta_ts)
-    sns.lineplot(beta_ts)
-    plt.xlabel("Diffusion step")
-    plt.ylabel(r"$\bar{\alpha}$")
+    beta_ts = torch.arange(min_beta, max_beta + step, step)
 
-    # Add noise
-    # TODO: Implement forward process
+    alpha_ts = 1 - beta_ts
+    bar_alpha_ts = torch.cumprod(alpha_ts, dim=0)
+    eps = torch.randn(size=X.shape)
+
+    return bar_alpha_ts, eps
+
+
+def calculate_data_at_certain_time(x_0, bar_alpha_ts, eps, t):
+    x_t = torch.sqrt(bar_alpha_ts[t]) * x_0 + torch.sqrt(1 - bar_alpha_ts[t]) * eps
+    return x_t
+
+
+def create_forward_process_animation(x, save_path):
+    X = torch.tensor(x, dtype=torch.float32)
+    diffusion_steps = 40
+    bar_alpha_ts, eps = calculate_parameters(X, diffusion_steps)
+    fig, ax = plt.subplots(figsize=(6, 6))
+    scatter = ax.scatter([], [], alpha=0.1, s=1)
+
+    def init():
+        ax.set_xlim(-3, 3)
+        ax.set_ylim(-3, 3)
+        ax.set_xlabel("x-axis")
+        ax.set_ylabel("z-axis")
+        ax.set_title("Forward Process")
+        return (scatter,)
+
+    def update(t):
+        x_t = calculate_data_at_certain_time(X, bar_alpha_ts, eps, t)
+        # Update scatter plot
+        scatter.set_offsets(x_t)
+        ax.set_title(f"Diffusion Process - Step {t}/{diffusion_steps}")
+        return (scatter,)
+
+    # Create animation
+    anim = FuncAnimation(fig, update, frames=diffusion_steps, init_func=init, blit=True)
+
+    # Save animation as video
+    anim.save(save_path, writer="pillow", fps=10)
+    plt.close(fig)
 
 
 if __name__ == "__main__":
     x = create_original_data()
-    # plt.scatter(x[:, 0], x[:, 1])
-    # plt.show()
-    add_noise(x)
-    # plt.show()
+    save_path = "../resources/forward_process.gif"
+    create_forward_process_animation(x, save_path)

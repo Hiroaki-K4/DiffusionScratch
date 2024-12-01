@@ -20,7 +20,7 @@ First, difussion model has **forward process** and the **reverse process**. In t
 In the reverse process, the reverse of the forward process is performed to recover the original image from the noisy data.
 The graph below is easy to understand these processes.
 
-<img src="images/forward_reverse.png" width='600'>
+<img src="resources/forward_reverse.png" width='600'>
 
 Diffusion model are latent variable models the form $p_\theta(x_0):=\int p_\theta(x_{0:T})dx_{1:T}$.
 The joint distribution $p_\theta(x_{0:T})$ is called the reverse process,
