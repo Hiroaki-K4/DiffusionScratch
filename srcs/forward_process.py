@@ -4,8 +4,8 @@ from matplotlib.animation import FuncAnimation
 from sklearn.datasets import make_swiss_roll
 
 
-def create_original_data():
-    x, _ = make_swiss_roll(n_samples=100000, noise=0.5)
+def create_original_data(sample_num, noise_std):
+    x, _ = make_swiss_roll(n_samples=sample_num, noise=noise_std)
     # Extract x and z axis
     x = x[:, [0, 2]]
     # Normalize value
@@ -14,10 +14,8 @@ def create_original_data():
     return x
 
 
-def calculate_parameters(X, diffusion_steps):
+def calculate_parameters(X, diffusion_steps, min_beta, max_beta):
     # Calculate beta
-    min_beta = 10e-4
-    max_beta = 0.02
     step = (max_beta - min_beta) / diffusion_steps
     beta_ts = torch.arange(min_beta, max_beta + step, step)
 
@@ -33,18 +31,17 @@ def calculate_data_at_certain_time(x_0, bar_alpha_ts, eps, t):
     return x_t
 
 
-def create_forward_process_animation(x, save_path):
+def create_forward_process_animation(x, diffusion_steps, min_beta, max_beta, save_path):
     X = torch.tensor(x, dtype=torch.float32)
-    diffusion_steps = 40
-    bar_alpha_ts, eps = calculate_parameters(X, diffusion_steps)
+    bar_alpha_ts, eps = calculate_parameters(X, diffusion_steps, min_beta, max_beta)
     fig, ax = plt.subplots(figsize=(6, 6))
     scatter = ax.scatter([], [], alpha=0.1, s=1)
 
     def init():
         ax.set_xlim(-3, 3)
         ax.set_ylim(-3, 3)
-        ax.set_xlabel("x-axis")
-        ax.set_ylabel("z-axis")
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
         ax.set_title("Forward Process")
         return (scatter,)
 
@@ -52,7 +49,7 @@ def create_forward_process_animation(x, save_path):
         x_t = calculate_data_at_certain_time(X, bar_alpha_ts, eps, t)
         # Update scatter plot
         scatter.set_offsets(x_t)
-        ax.set_title(f"Diffusion Process - Step {t}/{diffusion_steps}")
+        ax.set_title(f"Forward Process - Step {t}/{diffusion_steps}")
         return (scatter,)
 
     # Create animation
@@ -61,9 +58,15 @@ def create_forward_process_animation(x, save_path):
     # Save animation as video
     anim.save(save_path, writer="pillow", fps=10)
     plt.close(fig)
+    print("Finish saving gif file: ", save_path)
 
 
 if __name__ == "__main__":
-    x = create_original_data()
+    sample_num = 100000
+    noise_std = 0.5
+    x = create_original_data(sample_num, noise_std)
+    diffusion_steps = 40
+    min_beta = 10e-4
+    max_beta = 0.02
     save_path = "../resources/forward_process.gif"
-    create_forward_process_animation(x, save_path)
+    create_forward_process_animation(x, diffusion_steps, min_beta, max_beta, save_path)

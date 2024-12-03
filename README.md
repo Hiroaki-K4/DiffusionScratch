@@ -3,13 +3,54 @@
 <br></br>
 
 ## Forward process
+The forward process of adding Gaussian noise to the input data is expressed by the following equation. Diffusion model gradually adds Guassian noise to the data according to a variance schedule $\beta_1, ..., \beta_T$.
 
 $$
-\begin{align*}
-q(x_t|x_0) &= \mathcal{N} (x_t; \sqrt{\bar{\alpha_t}}x_0, (1-\bar{\alpha_t})I) \\
-x_t &= \sqrt{\bar{\alpha_t}}x_0 + \sqrt{1 - \bar{\alpha_t}}\epsilon \quad (\epsilon \sim \mathcal{N}(0,I))
-\end{align*}
+q(x_{1:T}|x_0):=\prod_{t=1}^T q(x_t|x_{t-1}), \quad q(x_t|x_{t-1}):=\mathcal{N}(x_t;\sqrt{1-\beta_t}x_{t-1},\beta_t I)
 $$
+
+A notable property of the forward process is that it admits sampling $x_t$, at an arbitrary timestep $t$ in closed form: using the notation $\alpha_t:=1-\beta_t$ and $\bar{\alpha_t}=\prod_{s=1}^t \alpha_s$, we have
+
+$$
+q(x_t|x_0) = \mathcal{N} (x_t; \sqrt{\bar{\alpha_t}}x_0, (1-\bar{\alpha_t})I)
+$$
+
+Thus, we can get $x_t$ by using a reparameterization trick.
+
+$$
+x_t = \sqrt{\bar{\alpha_t}}x_0 + \sqrt{1 - \bar{\alpha_t}}\epsilon \quad (\epsilon \sim \mathcal{N}(0,I))
+$$
+
+You can try a forward process with swiss roll by running following commands. We set the forward proces variance constants increasing linearly from $\beta_1=10^{-4}$ to $\beta_T=0.02$.
+
+```bash
+cd srcs
+python3 forward_process.py
+```
+
+<img src="resources/forward_process.gif" width='600'>
+
+The code to get $\bar{\alpha_t}$ and $\epsilon$ is here.
+
+```python
+def calculate_parameters(X, diffusion_steps, min_beta, max_beta):
+    # Calculate beta
+    step = (max_beta - min_beta) / diffusion_steps
+    beta_ts = torch.arange(min_beta, max_beta + step, step)
+
+    alpha_ts = 1 - beta_ts
+    bar_alpha_ts = torch.cumprod(alpha_ts, dim=0)
+    eps = torch.randn(size=X.shape)
+
+    return bar_alpha_ts, eps
+```
+The code to retrieve data at any given time in the forward process is as follows.
+
+```python
+def calculate_data_at_certain_time(x_0, bar_alpha_ts, eps, t):
+    x_t = torch.sqrt(bar_alpha_ts[t]) * x_0 + torch.sqrt(1 - bar_alpha_ts[t]) * eps
+    return x_t
+```
 
 <br></br>
 
