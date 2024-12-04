@@ -54,6 +54,15 @@ def calculate_data_at_certain_time(x_0, bar_alpha_ts, eps, t):
 
 <br></br>
 
+## Reverse process
+To represent the reverse process, we use a U-Net backbone similar to an unmasked PixelCNN++ [52,
+48] with group normalization throughout [66]. Parameters are shared across time, which is speciﬁed
+to the network using the Transformer sinusoidal position embedding [60]. We use self-attention at
+the 16 × 16 feature map resolution [63, 60]. Details are in Appendix B.
+
+
+<br></br>
+
 ## Derivation of loss function
 I show the derivatino of the loss function of the diffusion model.
 

@@ -65,7 +65,7 @@ if __name__ == "__main__":
     sample_num = 100000
     noise_std = 0.5
     x = create_original_data(sample_num, noise_std)
-    diffusion_steps = 40
+    diffusion_steps = 50
     min_beta = 10e-4
     max_beta = 0.02
     save_path = "../resources/forward_process.gif"
