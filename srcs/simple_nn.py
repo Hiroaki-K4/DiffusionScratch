@@ -3,18 +3,19 @@ import torch.nn as nn
 
 
 class SimpleNN(nn.Module):
-    def __init__(self, input_dim=2, hidden_dim=128):
+    def __init__(self, input_dim=2, hidden_dim=32):
         super().__init__()
         self.net = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
+            nn.Linear(input_dim + 1, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, input_dim),
         )
 
-    def forward(self, x):
-        return self.net(x)
+    def forward(self, x, t):
+        input_data = torch.hstack([x, t])
+        return self.net(input_data)
 
 
 if __name__ == "__main__":

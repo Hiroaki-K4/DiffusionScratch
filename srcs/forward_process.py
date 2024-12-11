@@ -18,9 +18,11 @@ def calculate_parameters(diffusion_steps, min_beta, max_beta):
 
 def calculate_data_at_certain_time(x_0, bar_alpha_ts, t):
     eps = torch.randn(size=x_0.shape)
-    x_t = torch.sqrt(bar_alpha_ts[t]) * x_0 + torch.sqrt(1 - bar_alpha_ts[t]) * eps
+    noised_x_t = (
+        torch.sqrt(bar_alpha_ts[t]) * x_0 + torch.sqrt(1 - bar_alpha_ts[t]) * eps
+    )
 
-    return x_t
+    return noised_x_t, eps
 
 
 def create_forward_process_animation(x, diffusion_steps, min_beta, max_beta, save_path):
@@ -38,9 +40,9 @@ def create_forward_process_animation(x, diffusion_steps, min_beta, max_beta, sav
         return (scatter,)
 
     def update(t):
-        x_t = calculate_data_at_certain_time(X, bar_alpha_ts, t)
+        noised_x_t, eps = calculate_data_at_certain_time(X, bar_alpha_ts, t)
         # Update scatter plot
-        scatter.set_offsets(x_t)
+        scatter.set_offsets(noised_x_t)
         ax.set_title(f"Forward Process - Step {t}/{diffusion_steps}")
         return (scatter,)
 
