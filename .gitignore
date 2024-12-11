@@ -1,1 +1,3 @@
 toy-diffusion/
+srcs/__pycache__/
+srcs/*.pth
