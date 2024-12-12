@@ -20,7 +20,9 @@ def train(
     model = SimpleNN().to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-6)
     loss_fn = nn.MSELoss()
-    bar_alpha_ts = calculate_parameters(diffusion_steps, min_beta, max_beta)
+    beta_ts, alpha_ts, bar_alpha_ts = calculate_parameters(
+        diffusion_steps, min_beta, max_beta
+    )
     for epoch in range(epochs):
         count = 0
         epoch_loss = 0
@@ -42,9 +44,6 @@ def train(
     print("Finished training!!")
     torch.save(model.state_dict(), output_model_path)
     print("Saved model: ", output_model_path)
-
-    model = SimpleNN()  # Use the same architecture as before
-    model.load_state_dict(torch.load(output_model_path, weights_only=True))
 
 
 if __name__ == "__main__":
