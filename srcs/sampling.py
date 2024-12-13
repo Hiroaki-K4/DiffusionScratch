@@ -1,27 +1,21 @@
 import matplotlib.pyplot as plt
 import torch
-from forward_process import calculate_parameters
 from matplotlib.animation import FuncAnimation
+
+from forward_process import calculate_parameters
 from simple_nn import SimpleNN
 
 
 def sampling(model_path, sample_num, diffusion_steps, min_beta, max_beta):
-    model = SimpleNN()  # Use the same architecture as before
+    model = SimpleNN()
     model.load_state_dict(torch.load(model_path, weights_only=True))
     model.eval()
 
     with torch.no_grad():
         x_init = torch.randn(size=(sample_num, 2))
-        print(x_init)
-        print(x_init.shape)
-        # plt.scatter(x_init[:,0], x_init[:,1], s=5)
-        # plt.show()
-
-        # print(model)
         beta_ts, alpha_ts, bar_alpha_ts = calculate_parameters(
             diffusion_steps, min_beta, max_beta
         )
-        print(bar_alpha_ts)
         denoised_x = torch.zeros((diffusion_steps, x_init.shape[0], x_init.shape[1]))
         denoised_x[-1] = x_init
         for t in range(diffusion_steps - 1, 0, -1):
@@ -36,18 +30,13 @@ def sampling(model_path, sample_num, diffusion_steps, min_beta, max_beta):
                 * (
                     (
                         denoised_x[t]
-                        - (1 - alpha_ts[t]) / torch.sqrt(1 - bar_alpha_ts[t])
+                        - (1 - alpha_ts[t])
+                        / torch.sqrt(1 - bar_alpha_ts[t])
+                        * model.forward(denoised_x[t], ts)
                     )
-                    * model.forward(denoised_x[t], ts)
                 )
             )
             denoised_x[t - 1] = mu + torch.sqrt(beta_ts[t]) * z
-
-    print(denoised_x)
-    # plt.scatter(
-    #     denoised_x[0].detach().numpy()[:, 0], denoised_x[0].detach().numpy()[:, 1], s=5
-    # )
-    # plt.show()
 
     return denoised_x
 

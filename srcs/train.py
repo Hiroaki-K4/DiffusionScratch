@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+
 from forward_process import calculate_data_at_certain_time, calculate_parameters
 from prepare_dataset import create_original_data
 from simple_nn import SimpleNN
@@ -13,11 +14,12 @@ def train(
     diffusion_steps,
     min_beta,
     max_beta,
+    learning_rate,
     output_model_path,
 ):
     data_loader = torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=True)
     model = SimpleNN().to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-6)
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     loss_fn = nn.MSELoss()
     beta_ts, alpha_ts, bar_alpha_ts = calculate_parameters(
         diffusion_steps, min_beta, max_beta
@@ -30,7 +32,9 @@ def train(
             noised_x_t, eps = calculate_data_at_certain_time(
                 x, bar_alpha_ts, random_time_step
             )
-            predicted_eps = model.forward(x.to(device), random_time_step.to(device))
+            predicted_eps = model.forward(
+                noised_x_t.to(device), random_time_step.to(device)
+            )
             loss = loss_fn(predicted_eps, eps.to(device))
             optimizer.zero_grad()
             loss.backward()
@@ -61,10 +65,11 @@ if __name__ == "__main__":
     x = create_original_data(sample_num, noise_std)
     data = torch.tensor(x, dtype=torch.float32)
     batch_size = 128
-    epochs = 20
+    epochs = 30
     diffusion_steps = 50
     min_beta = 1e-4
     max_beta = 0.02
+    learning_rate = 1e-3
     output_model_path = "diffusion_model.pth"
     train(
         data,
@@ -74,5 +79,6 @@ if __name__ == "__main__":
         diffusion_steps,
         min_beta,
         max_beta,
+        learning_rate,
         output_model_path,
     )
