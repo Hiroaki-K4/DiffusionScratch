@@ -13,7 +13,7 @@ def calculate_parameters(diffusion_steps, min_beta, max_beta):
     alpha_ts = 1 - beta_ts
     bar_alpha_ts = torch.cumprod(alpha_ts, dim=0)
 
-    return bar_alpha_ts
+    return beta_ts, alpha_ts, bar_alpha_ts
 
 
 def calculate_data_at_certain_time(x_0, bar_alpha_ts, t):
@@ -27,7 +27,9 @@ def calculate_data_at_certain_time(x_0, bar_alpha_ts, t):
 
 def create_forward_process_animation(x, diffusion_steps, min_beta, max_beta, save_path):
     X = torch.tensor(x, dtype=torch.float32)
-    bar_alpha_ts = calculate_parameters(diffusion_steps, min_beta, max_beta)
+    beta_ts, alpha_ts, bar_alpha_ts = calculate_parameters(
+        diffusion_steps, min_beta, max_beta
+    )
     fig, ax = plt.subplots(figsize=(6, 6))
     scatter = ax.scatter([], [], alpha=0.1, s=1)
 
