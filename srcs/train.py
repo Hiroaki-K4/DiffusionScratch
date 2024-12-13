@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-
 from forward_process import calculate_data_at_certain_time, calculate_parameters
 from prepare_dataset import create_original_data
 from simple_nn import SimpleNN
