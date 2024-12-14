@@ -24,7 +24,7 @@ pip install -r requirements.txt
 <br></br>
 
 ## Forward process
-The forward process of adding Gaussian noise to the input data is expressed by the following equation. Diffusion model gradually adds Guassian noise to the data according to a variance schedule $\beta_1, ..., \beta_T$.
+The forward process of adding Gaussian noise to the input data is expressed by the following equation. Diffusion model gradually adds Gaussian noise to the data according to a variance schedule $\beta_1, ..., \beta_T$.
 
 $$
 q(x_{1:T}|x_0):=\prod_{t=1}^T q(x_t|x_{t-1}), \quad q(x_t|x_{t-1}):=\mathcal{N}(x_t;\sqrt{1-\beta_t}x_{t-1},\beta_t I)
@@ -66,7 +66,7 @@ def calculate_data_at_certain_time(x_0, bar_alpha_ts, t):
     return noised_x_t, eps
 ```
 
-You can try a forward process with swiss roll by running following commands. We set the forward proces variance constants increasing linearly from $\beta_1=10^{-4}$ to $\beta_T=0.02$.
+You can try a forward process with swiss roll by running following commands. We set the forward process variance constants increasing linearly from $\beta_1=10^{-4}$ to $\beta_T=0.02$.
 
 ```bash
 cd srcs
@@ -78,7 +78,7 @@ python3 forward_process.py
 <br></br>
 
 ## Neural network for training
-Original paper uses **U-Net** backbone, but I used simple neural network for training this time because it is enough in this data. It has 4 hidden layers and use ReLU as an activate function.  
+Original paper uses **U-Net** backbone, but I used simple neural network for training this time because it is enough in this data. It has 4 hidden layers and use ReLU as an activation function.  
 If you want to check the architecture of model, you can run the following command.
 
 ```bash
@@ -95,7 +95,7 @@ $$
 x_{t-1} \sim \mathcal{N}(\mu_\theta(x_t,t),\Sigma_t)
 $$
 
-The variance is fixed, so we need to predict $\mu_\theta(x_t,t)$. $\mu_\theta(x_t,t)$ can be rewriten as follows by simplifing equations. If you want to know the details of that, please check *derivation of loss function* section.
+The variance is fixed, so we need to predict $\mu_\theta(x_t,t)$. $\mu_\theta(x_t,t)$ can be rewritten as follows by simplifying equations. If you want to know the details of that, please check *derivation of loss function* section.
 
 $$
 \mu_\theta (x_t, t) = \frac{1}{\sqrt{\alpha_t}} \Big( x_t - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon_\theta(x_t, t) \Big)
@@ -116,7 +116,7 @@ Parameters which I used during training is as follows.
 ```
 - Optimizer -> Adam
 - Batch size -> 128
-- epochs -> 30
+- Epochs -> 30
 - Diffusion timesteps -> 50
 - Minimum beta -> 1e-4
 - Maximum beta -> 0.02
@@ -132,7 +132,7 @@ python3 train.py
 <br></br>
 
 ## Sampling
-To sample $x_{t-1} \sim p_\theta(x_{t-1}|x_t)$ is to compute below eqution. It is used [reparameterization trick](https://sassafras13.github.io/ReparamTrick/).
+To sample $x_{t-1} \sim p_\theta(x_{t-1}|x_t)$ is to compute below equation. It is used [reparameterization trick](https://sassafras13.github.io/ReparamTrick/).
 
 $$
 x_{t-1} = \frac{1}{\sqrt{\alpha_t}} \Big( x_t - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon_\theta(x_t, t) \Big) + \sigma_t z, \quad (z\sim \mathcal{N}(0,I))
