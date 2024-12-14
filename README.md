@@ -1,4 +1,25 @@
 # DiffusionScratch
+The Diffusion model is implemented from scratch in this repository. In this case, I used the swiss roll dataset and the algorithm basically followed [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239).
+
+<br></br>
+
+## Overview
+When we implement the Diffusion model, the following parts need to be implemented.
+I will explain each of these steps.
+
+- **Forward process**
+- **Neural network for training**
+- **Training**
+- **Sampling**
+
+You can create local environment by running following commands.
+
+```bash
+conda create -n diff python=3.11
+conda activate diff
+conda install pytorch torchvision pytorch-cuda=12.1 -c pytorch -c nvidia
+pip install -r requirements.txt
+```
 
 <br></br>
 
@@ -15,7 +36,7 @@ $$
 q(x_t|x_0) = \mathcal{N} (x_t; \sqrt{\bar{\alpha_t}}x_0, (1-\bar{\alpha_t})I)
 $$
 
-Thus, we can get $x_t$ by using a reparameterization trick.
+Thus, we can get $x_t$ by using a [reparameterization trick](https://sassafras13.github.io/ReparamTrick/).
 
 $$
 x_t = \sqrt{\bar{\alpha_t}}x_0 + \sqrt{1 - \bar{\alpha_t}}\epsilon \quad (\epsilon \sim \mathcal{N}(0,I))
@@ -30,36 +51,106 @@ python3 forward_process.py
 
 <img src="resources/forward_process.gif" width='600'>
 
-The code to get $\bar{\alpha_t}$ and $\epsilon$ is here.
+The code to get $\bar{\alpha_t}$ is here.
 
 ```python
-def calculate_parameters(X, diffusion_steps, min_beta, max_beta):
-    # Calculate beta
+def calculate_parameters(diffusion_steps, min_beta, max_beta):
     step = (max_beta - min_beta) / diffusion_steps
     beta_ts = torch.arange(min_beta, max_beta + step, step)
 
     alpha_ts = 1 - beta_ts
     bar_alpha_ts = torch.cumprod(alpha_ts, dim=0)
-    eps = torch.randn(size=X.shape)
 
-    return bar_alpha_ts, eps
+    return beta_ts, alpha_ts, bar_alpha_ts
 ```
-The code to retrieve data at any given time in the forward process is as follows.
+The code to retrieve data and $\epsilon$ at any given time in the forward process is as follows.
 
 ```python
-def calculate_data_at_certain_time(x_0, bar_alpha_ts, eps, t):
-    x_t = torch.sqrt(bar_alpha_ts[t]) * x_0 + torch.sqrt(1 - bar_alpha_ts[t]) * eps
-    return x_t
+def calculate_data_at_certain_time(x_0, bar_alpha_ts, t):
+    eps = torch.randn(size=x_0.shape)
+    noised_x_t = (
+        torch.sqrt(bar_alpha_ts[t]) * x_0 + torch.sqrt(1 - bar_alpha_ts[t]) * eps
+    )
+
+    return noised_x_t, eps
 ```
 
 <br></br>
 
-## Reverse process
-To represent the reverse process, we use a U-Net backbone similar to an unmasked PixelCNN++ [52,
-48] with group normalization throughout [66]. Parameters are shared across time, which is speciﬁed
-to the network using the Transformer sinusoidal position embedding [60]. We use self-attention at
-the 16 × 16 feature map resolution [63, 60]. Details are in Appendix B.
+## Neural network for training
+Original paper uses U-Net backbone, but I used simple neural network for training  because it is enough in this data. It has 4 hidden layers and use ReLU as an activate function.  
+If you want to check the architecture of model, you can run the following command.
 
+```bash
+cd srcs
+python3 simple_nn.py
+```
+
+<br></br>
+
+## Training
+In reverse process, we calculate $x_{t-1}$ from $x_t$ and timestep $t$ by normal distribution.
+
+$$
+x_{t-1} \sim \mathcal{N}(\mu_\theta(x_t,t),\Sigma_t)
+$$
+
+The variance is fixed, so we need to predict $\mu_\theta(x_t,t)$. $\mu_\theta(x_t,t)$ can be rewriten as follows by simplifing equations. If you want to know the details of that, please check *derivation of loss function* section.
+
+$$
+\mu_\theta (x_t, t) = \frac{1}{\sqrt{\alpha_t}} \Big( x_t - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon_\theta(x_t, t) \Big)
+$$
+
+Therefore, we train $\epsilon$ during training, loss function is as follows. If you want to know the details of that, please check *derivation of loss function* section.
+
+$$
+L_{simple} := E_{t, x_0, \epsilon} \Big[ | \epsilon - \epsilon_\theta (\sqrt{\bar{\alpha_t}}x_0 + \sqrt{1-\bar{\alpha_t}}\epsilon, t) |^2 \Big]
+$$
+
+I followed below training algorithms of original paper.
+
+<img src="resources/train_algo.png" width='400'>
+
+Parameters which I used during training is as follows.
+
+```
+- Optimizer -> Adam
+- Batch size -> 128
+- epochs -> 30
+- Diffusion timesteps -> 50
+- Minimum beta -> 1e-4
+- Maximum beta -> 0.02
+```
+
+You can train the diffusion model by running following commands.
+
+```bash
+cd srcs
+python3 train.py
+```
+
+<br></br>
+
+## Sampling
+To sample $x_{t-1} \sim p_\theta(x_{t-1}|x_t)$ is to compute below eqution. It is used [reparameterization trick](https://sassafras13.github.io/ReparamTrick/).
+
+$$
+x_{t-1} = \frac{1}{\sqrt{\alpha_t}} \Big( x_t - \frac{\beta_t}{\sqrt{1-\bar{\alpha_t}}} \epsilon_\theta(x_t, t) \Big) + \sigma_t z, \quad (z\sim \mathcal{N}(0,I))
+$$
+
+
+I followed below sampling algorithms of original paper. We initialize $x_T$ with a random value, and with $x_t$ and $t$ as inputs, the neural network output $\epsilon$, so we use that value to calculate $x_{t-1}$. This is repeated until $x_0$ is calculated.
+
+<img src="resources/sampling_algo.png" width='400'>
+
+You can try sampling by running following commands.
+
+```bash
+cd srcs
+python3 sampling.py
+```
+
+<img src="resources/sampling.gif" width='600'>
 
 <br></br>
 
@@ -346,18 +437,9 @@ This may be related to the fact that we first approximate $q(x_{t-1}|x_t,x_0)$ w
 
 <br></br>
 
-## How to create an environment
-
-```bash
-conda create -n diff python=3.11
-conda activate diff
-conda install pytorch torchvision pytorch-cuda=12.1 -c pytorch -c nvidia
-pip install -r requirements.txt
-```
-
-<br></br>
-
 ## References
 - [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239)
 - [Deep Unsupervised Learning using Nonequilibrium Thermodynamics](https://arxiv.org/pdf/1503.03585)
 - [The Reparameterization Trick](https://sassafras13.github.io/ReparamTrick/)
+- [toy-diffusion](https://github.com/albarji/toy-diffusion)
+- [Understanding the Diffusion Model](https://data-analytics.fun/2022/02/03/understanding-diffusion-model/)

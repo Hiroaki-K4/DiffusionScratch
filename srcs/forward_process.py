@@ -6,7 +6,6 @@ from prepare_dataset import create_original_data
 
 
 def calculate_parameters(diffusion_steps, min_beta, max_beta):
-    # Calculate beta
     step = (max_beta - min_beta) / diffusion_steps
     beta_ts = torch.arange(min_beta, max_beta + step, step)
 
