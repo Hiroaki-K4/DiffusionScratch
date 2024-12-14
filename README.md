@@ -1,5 +1,5 @@
 # DiffusionScratch
-The Diffusion model is implemented from scratch in this repository. In this case, I used the swiss roll dataset and the algorithm basically followed [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239).
+The Diffusion model is implemented from scratch in this repository. In this case, I used the swiss roll dataset and the algorithm basically followed **[Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239)**.
 
 <br></br>
 
@@ -42,15 +42,6 @@ $$
 x_t = \sqrt{\bar{\alpha_t}}x_0 + \sqrt{1 - \bar{\alpha_t}}\epsilon \quad (\epsilon \sim \mathcal{N}(0,I))
 $$
 
-You can try a forward process with swiss roll by running following commands. We set the forward proces variance constants increasing linearly from $\beta_1=10^{-4}$ to $\beta_T=0.02$.
-
-```bash
-cd srcs
-python3 forward_process.py
-```
-
-<img src="resources/forward_process.gif" width='600'>
-
 The code to get $\bar{\alpha_t}$ is here.
 
 ```python
@@ -75,10 +66,19 @@ def calculate_data_at_certain_time(x_0, bar_alpha_ts, t):
     return noised_x_t, eps
 ```
 
+You can try a forward process with swiss roll by running following commands. We set the forward proces variance constants increasing linearly from $\beta_1=10^{-4}$ to $\beta_T=0.02$.
+
+```bash
+cd srcs
+python3 forward_process.py
+```
+
+<img src="resources/forward_process.gif" width='600'>
+
 <br></br>
 
 ## Neural network for training
-Original paper uses U-Net backbone, but I used simple neural network for training  because it is enough in this data. It has 4 hidden layers and use ReLU as an activate function.  
+Original paper uses **U-Net** backbone, but I used simple neural network for training this time because it is enough in this data. It has 4 hidden layers and use ReLU as an activate function.  
 If you want to check the architecture of model, you can run the following command.
 
 ```bash
