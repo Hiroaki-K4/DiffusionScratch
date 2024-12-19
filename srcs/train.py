@@ -50,7 +50,6 @@ def train(
 
 
 if __name__ == "__main__":
-    batch_size = 128
     device = (
         "cuda"
         if torch.cuda.is_available()
